@@ -1,0 +1,6 @@
+.env
+.TT/
+repositories/
+vectorstore/
+__pycache__/
+*.pyc

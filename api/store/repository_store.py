@@ -1,0 +1,3 @@
+vectorstore = None
+
+history = []
