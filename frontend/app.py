@@ -7,7 +7,7 @@ import textwrap
 # CONFIGURATION
 # =====================================
 
-API_URL = "https://codeflix-backend-rvj.onrender.com"
+API_URL = "https://codeflix-backend-rvij.onrender.com"
 
 st.set_page_config(
     page_title="CODEFLIX AI",
