@@ -44,11 +44,21 @@
 #     }
 from fastapi import FastAPI
 
-app = FastAPI()
+from api.routes.index import router as index_router
+from api.routes.chat import router as chat_router
+
+
+app = FastAPI(
+    title="CODEFLIX AI Backend"
+)
 
 
 @app.get("/")
 def home():
     return {
-        "message": "CODEFLIX backend is running"
+        "message": "CODEFLIX AI Backend is running"
     }
+
+
+app.include_router(index_router)
+app.include_router(chat_router)
