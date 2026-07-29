@@ -437,7 +437,7 @@ if "repo_name" not in st.session_state:
 # HEADER
 # =====================================
 
-render_html(
+st.html(
     """
     <div class="logo">
         CODEFLIX
@@ -454,7 +454,7 @@ render_html(
 # HERO
 # =====================================
 
-render_html(
+st.html(
     """
     <div class="hero">
 
@@ -488,7 +488,7 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
 
-    render_html(
+    st.html(
         """
         <div class="feature-card">
 
@@ -512,7 +512,7 @@ with col1:
 
 with col2:
 
-    render_html(
+    st.html(
         """
         <div class="feature-card">
 
@@ -536,7 +536,7 @@ with col2:
 
 with col3:
 
-    render_html(
+    st.html(
         """
         <div class="feature-card">
 
@@ -562,7 +562,7 @@ with col3:
 # INDEX REPOSITORY
 # =====================================
 
-render_html(
+st.html(
     """
     <div class="section-title">
         📂 Add a Repository
@@ -709,7 +709,7 @@ st.divider()
 
 if st.session_state.repository_indexed:
 
-    render_html(
+    st.html(
         f"""
         <div class="section-title">
 
@@ -725,7 +725,7 @@ if st.session_state.repository_indexed:
 
 else:
 
-    render_html(
+    st.html(
         """
         <div class="section-title">
             💬 Ask CODEFLIX
@@ -886,7 +886,7 @@ if question:
 # FOOTER
 # =====================================
 
-render_html(
+st.html(
     """
     <div class="footer">
 
