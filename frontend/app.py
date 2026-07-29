@@ -6,7 +6,7 @@ import requests
 # CONFIG
 # =====================================
 
-API_URL = "https://codeflix-backend-rvij.onrender.com"
+API_URL = "https://codeflix-backend-rvj.onrender.com"
 
 
 st.set_page_config(
@@ -18,14 +18,75 @@ st.set_page_config(
 
 
 # =====================================
+# HELPER FUNCTIONS
+# =====================================
+
+def get_response_data(response):
+
+    content_type = response.headers.get(
+        "content-type",
+        ""
+    )
+
+    if "application/json" in content_type.lower():
+
+        try:
+            return response.json()
+
+        except ValueError:
+            return None
+
+    return None
+
+
+def show_backend_error(response, default_message):
+
+    data = get_response_data(response)
+
+    if data:
+
+        detail = data.get(
+            "detail",
+            data.get(
+                "message",
+                default_message
+            )
+        )
+
+        if isinstance(detail, list):
+
+            detail = str(detail)
+
+        st.error(
+            f"Backend error: {detail}"
+        )
+
+    else:
+
+        st.error(
+            f"{default_message} "
+            f"(Status code: {response.status_code})"
+        )
+
+        if response.text:
+
+            with st.expander(
+                "View backend response"
+            ):
+
+                st.code(
+                    response.text[:1500],
+                    language=None
+                )
+
+
+# =====================================
 # NETFLIX-INSPIRED CSS
 # =====================================
 
 st.markdown(
     """
     <style>
-
-    /* Main background */
 
     .stApp {
         background:
@@ -44,8 +105,6 @@ st.markdown(
     }
 
 
-    /* Remove default top spacing */
-
     .block-container {
         padding-top: 1.5rem;
         padding-bottom: 3rem;
@@ -53,22 +112,20 @@ st.markdown(
     }
 
 
-    /* Hide Streamlit branding */
-
     #MainMenu {
         visibility: hidden;
     }
+
 
     footer {
         visibility: hidden;
     }
 
+
     header {
         background: transparent !important;
     }
 
-
-    /* Main logo */
 
     .logo {
         color: #e50914;
@@ -76,13 +133,12 @@ st.markdown(
         font-weight: 900;
         letter-spacing: -2px;
         margin-bottom: 0;
+
         text-shadow:
             0 0 15px
             rgba(229, 9, 20, 0.35);
     }
 
-
-    /* Subtitle */
 
     .subtitle {
         color: #b3b3b3;
@@ -91,8 +147,6 @@ st.markdown(
         margin-bottom: 2rem;
     }
 
-
-    /* Hero section */
 
     .hero {
         padding: 3.5rem;
@@ -138,8 +192,6 @@ st.markdown(
     }
 
 
-    /* Section titles */
-
     .section-title {
         font-size: 1.45rem;
         font-weight: 750;
@@ -147,8 +199,6 @@ st.markdown(
         margin-bottom: 0.7rem;
     }
 
-
-    /* Cards */
 
     .feature-card {
         background:
@@ -163,9 +213,7 @@ st.markdown(
             #252525;
 
         border-radius: 15px;
-
         padding: 1.3rem;
-
         min-height: 130px;
 
         transition: 0.3s;
@@ -202,11 +250,8 @@ st.markdown(
     }
 
 
-    /* Input */
-
     .stTextInput input {
         background-color: #141414 !important;
-
         color: white !important;
 
         border:
@@ -214,7 +259,6 @@ st.markdown(
             #333333 !important;
 
         border-radius: 8px !important;
-
         padding: 0.8rem !important;
     }
 
@@ -230,8 +274,6 @@ st.markdown(
     }
 
 
-    /* Red buttons */
-
     .stButton button {
         width: 100%;
 
@@ -243,16 +285,11 @@ st.markdown(
             ) !important;
 
         color: white !important;
-
         border: none !important;
-
         border-radius: 7px !important;
 
         font-weight: 700 !important;
-
         padding: 0.7rem !important;
-
-        transition: 0.25s;
     }
 
 
@@ -273,8 +310,6 @@ st.markdown(
     }
 
 
-    /* Chat */
-
     [data-testid="stChatMessage"] {
         background-color:
             rgba(20, 20, 20, 0.85);
@@ -284,14 +319,10 @@ st.markdown(
             #292929;
 
         border-radius: 14px;
-
         padding: 1rem;
-
         margin-bottom: 0.8rem;
     }
 
-
-    /* Chat input */
 
     [data-testid="stChatInput"] {
         border:
@@ -299,48 +330,26 @@ st.markdown(
             #333333;
 
         border-radius: 12px;
-
-        background:
-            #111111;
+        background: #111111;
     }
 
 
-    /* Metrics */
-
     [data-testid="stMetric"] {
-        background:
-            #121212;
+        background: #121212;
 
         border:
             1px solid
             #292929;
 
         padding: 1rem;
-
         border-radius: 12px;
     }
 
-
-    /* Divider */
 
     hr {
         border-color: #252525;
     }
 
-
-    /* Success message */
-
-    .stSuccess {
-        background:
-            rgba(20, 120, 50, 0.15);
-
-        border:
-            1px solid
-            rgba(40, 180, 80, 0.4);
-    }
-
-
-    /* Footer */
 
     .footer {
         color: #666666;
@@ -396,35 +405,31 @@ st.markdown(
 # HERO
 # =====================================
 
-# =====================================
-# HERO
-# =====================================
-
 st.markdown(
     """
-<div class="hero">
+    <div class="hero">
 
-<div class="hero-title">
-Your code.<br>
-<span class="red-text">
-Explained by AI.
-</span>
-</div>
+        <div class="hero-title">
+            Your code.<br>
 
-<div class="hero-description">
-Add a GitHub repository, let AI understand
-the codebase, and ask questions about
-files, architecture, logic, and implementation.
-</div>
+            <span class="red-text">
+                Explained by AI.
+            </span>
+        </div>
 
-</div>
-""",
+        <div class="hero-description">
+
+            Add a GitHub repository, let AI understand
+            the codebase, and ask questions about
+            files, architecture, logic, and implementation.
+
+        </div>
+
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
-# =====================================
-# FEATURES
-# =====================================
 
 # =====================================
 # FEATURES
@@ -437,22 +442,23 @@ with col1:
 
     st.markdown(
         """
-<div class="feature-card">
+        <div class="feature-card">
 
-<div class="card-icon">
-📂
-</div>
+            <div class="card-icon">
+                📂
+            </div>
 
-<div class="card-title">
-Repository Analysis
-</div>
+            <div class="card-title">
+                Repository Analysis
+            </div>
 
-<div class="card-text">
-Index GitHub repositories automatically.
-</div>
+            <div class="card-text">
+                Index GitHub repositories
+                automatically.
+            </div>
 
-</div>
-""",
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -461,22 +467,23 @@ with col2:
 
     st.markdown(
         """
-<div class="feature-card">
+        <div class="feature-card">
 
-<div class="card-icon">
-🧠
-</div>
+            <div class="card-icon">
+                🧠
+            </div>
 
-<div class="card-title">
-AI Code Understanding
-</div>
+            <div class="card-title">
+                AI Code Understanding
+            </div>
 
-<div class="card-text">
-Ask questions about your complete codebase.
-</div>
+            <div class="card-text">
+                Ask questions about
+                your complete codebase.
+            </div>
 
-</div>
-""",
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -485,22 +492,23 @@ with col3:
 
     st.markdown(
         """
-<div class="feature-card">
+        <div class="feature-card">
 
-<div class="card-icon">
-🔍
-</div>
+            <div class="card-icon">
+                🔍
+            </div>
 
-<div class="card-title">
-Source-Aware Answers
-</div>
+            <div class="card-title">
+                Source-Aware Answers
+            </div>
 
-<div class="card-text">
-See which repository files support the answer.
-</div>
+            <div class="card-text">
+                See which repository
+                files support the answer.
+            </div>
 
-</div>
-""",
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -510,9 +518,11 @@ See which repository files support the answer.
 # =====================================
 
 st.markdown(
-    '<div class="section-title">'
-    '📂 Add a Repository'
-    '</div>',
+    """
+    <div class="section-title">
+        📂 Add a Repository
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
@@ -555,68 +565,88 @@ if st.button(
                 )
 
 
-                if response.status_code == 200:
+                if response.ok:
 
-                    data = response.json()
-
-                    st.session_state.repository_indexed = True
-
-                    st.session_state.messages = []
-
-                    st.session_state.repo_name = (
-                        repo_url.rstrip("/")
-                        .split("/")[-1]
+                    data = get_response_data(
+                        response
                     )
 
-                    st.success(
-                        "Repository indexed successfully!"
-                    )
+                    if data is None:
 
-                    metric1, metric2, metric3 = (
-                        st.columns(3)
-                    )
+                        st.error(
+                            "The backend returned "
+                            "invalid JSON."
+                        )
 
-                    metric1.metric(
-                        "Repository",
-                        st.session_state.repo_name
-                    )
+                    else:
 
-                    metric2.metric(
-                        "Documents",
-                        data["documents"]
-                    )
+                        st.session_state.repository_indexed = True
 
-                    metric3.metric(
-                        "AI Chunks",
-                        data["chunks"]
-                    )
+                        st.session_state.messages = []
 
+                        st.session_state.repo_name = (
+                            repo_url.rstrip("/")
+                            .split("/")[-1]
+                        )
+
+                        st.success(
+                            "Repository indexed successfully!"
+                        )
+
+                        metric1, metric2, metric3 = (
+                            st.columns(3)
+                        )
+
+                        metric1.metric(
+                            "Repository",
+                            st.session_state.repo_name
+                        )
+
+                        metric2.metric(
+                            "Documents",
+                            data.get(
+                                "documents",
+                                0
+                            )
+                        )
+
+                        metric3.metric(
+                            "AI Chunks",
+                            data.get(
+                                "chunks",
+                                0
+                            )
+                        )
 
                 else:
 
-                    detail = (
-                        response.json()
-                        .get(
-                            "detail",
-                            "Repository indexing failed."
-                        )
+                    show_backend_error(
+                        response,
+                        "Repository indexing failed."
                     )
-
-                    st.error(detail)
-
-
-            except requests.exceptions.ConnectionError:
-
-                st.error(
-                    "FastAPI is not running. "
-                    "Start the backend first."
-                )
 
 
             except requests.exceptions.Timeout:
 
                 st.error(
-                    "Indexing took too long."
+                    "Indexing took too long. "
+                    "Render may be waking up. "
+                    "Please try again."
+                )
+
+
+            except requests.exceptions.ConnectionError:
+
+                st.error(
+                    "Cannot connect to the "
+                    "Render backend."
+                )
+
+
+            except requests.exceptions.RequestException as error:
+
+                st.error(
+                    f"Request failed: {error}"
                 )
 
 
@@ -632,10 +662,13 @@ if st.session_state.repository_indexed:
     st.markdown(
         f"""
         <div class="section-title">
+
             💬 Ask CODEFLIX
+
             <span class="red-text">
                 · {st.session_state.repo_name}
             </span>
+
         </div>
         """,
         unsafe_allow_html=True
@@ -653,7 +686,9 @@ else:
     )
 
 
-# Display old messages
+# =====================================
+# DISPLAY CHAT HISTORY
+# =====================================
 
 for message in st.session_state.messages:
 
@@ -666,7 +701,9 @@ for message in st.session_state.messages:
         )
 
 
-# User input
+# =====================================
+# CHAT INPUT
+# =====================================
 
 question = st.chat_input(
     "Ask anything about this repository..."
@@ -678,7 +715,8 @@ if question:
     if not st.session_state.repository_indexed:
 
         st.warning(
-            "Index a repository before asking questions."
+            "Index a repository before "
+            "asking questions."
         )
 
     else:
@@ -709,67 +747,84 @@ if question:
                         json={
                             "question": question
                         },
-                        timeout=180
+                        timeout=300
                     )
 
 
-                    if response.status_code == 200:
+                    if response.ok:
 
-                        data = response.json()
-
-                        answer = data["answer"]
-
-                        st.write(answer)
-
-
-                        if data.get("sources"):
-
-                            with st.expander(
-                                "📄 View Sources"
-                            ):
-
-                                for source in data[
-                                    "sources"
-                                ]:
-
-                                    st.code(
-                                        source,
-                                        language=None
-                                    )
-
-
-                        st.session_state.messages.append(
-                            {
-                                "role": "assistant",
-                                "content": answer
-                            }
+                        data = get_response_data(
+                            response
                         )
 
+                        if data is None:
+
+                            st.error(
+                                "The backend returned "
+                                "invalid JSON."
+                            )
+
+                        else:
+
+                            answer = data.get(
+                                "answer",
+                                "No answer was returned."
+                            )
+
+                            st.write(answer)
+
+
+                            if data.get("sources"):
+
+                                with st.expander(
+                                    "📄 View Sources"
+                                ):
+
+                                    for source in data[
+                                        "sources"
+                                    ]:
+
+                                        st.code(
+                                            source,
+                                            language=None
+                                        )
+
+
+                            st.session_state.messages.append(
+                                {
+                                    "role": "assistant",
+                                    "content": answer
+                                }
+                            )
 
                     else:
 
-                        detail = (
-                            response.json()
-                            .get(
-                                "detail",
-                                "Unable to generate an answer."
-                            )
+                        show_backend_error(
+                            response,
+                            "Unable to generate an answer."
                         )
-
-                        st.error(detail)
-
-
-                except requests.exceptions.ConnectionError:
-
-                    st.error(
-                        "Cannot connect to FastAPI."
-                    )
 
 
                 except requests.exceptions.Timeout:
 
                     st.error(
-                        "The AI response timed out."
+                        "The AI response took too long. "
+                        "Please try again."
+                    )
+
+
+                except requests.exceptions.ConnectionError:
+
+                    st.error(
+                        "Cannot connect to the "
+                        "Render backend."
+                    )
+
+
+                except requests.exceptions.RequestException as error:
+
+                    st.error(
+                        f"Request failed: {error}"
                     )
 
 
