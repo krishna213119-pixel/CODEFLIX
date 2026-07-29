@@ -1,16 +1,16 @@
 import streamlit as st
 import requests
+import textwrap
 
 
 # =====================================
-# CONFIG
+# CONFIGURATION
 # =====================================
 
 API_URL = "https://codeflix-backend-rvj.onrender.com"
 
-
 st.set_page_config(
-    page_title="CodeFlix AI",
+    page_title="CODEFLIX AI",
     page_icon="🎬",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -21,29 +21,48 @@ st.set_page_config(
 # HELPER FUNCTIONS
 # =====================================
 
-def get_response_data(response):
+def render_html(html):
+    """
+    Render HTML without Markdown converting
+    indented HTML into a code block.
+    """
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
 
+
+def get_json_response(response):
+    """
+    Safely read JSON from a backend response.
+    Returns None if the response is not JSON.
+    """
     content_type = response.headers.get(
         "content-type",
         ""
-    )
+    ).lower()
 
-    if "application/json" in content_type.lower():
+    if "application/json" not in content_type:
+        return None
 
-        try:
-            return response.json()
+    try:
+        return response.json()
 
-        except ValueError:
-            return None
-
-    return None
+    except ValueError:
+        return None
 
 
-def show_backend_error(response, default_message):
+def show_backend_error(
+    response,
+    default_message
+):
+    """
+    Display backend errors safely.
+    """
 
-    data = get_response_data(response)
+    data = get_json_response(response)
 
-    if data:
+    if data is not None:
 
         detail = data.get(
             "detail",
@@ -53,10 +72,6 @@ def show_backend_error(response, default_message):
             )
         )
 
-        if isinstance(detail, list):
-
-            detail = str(detail)
-
         st.error(
             f"Backend error: {detail}"
         )
@@ -65,7 +80,7 @@ def show_backend_error(response, default_message):
 
         st.error(
             f"{default_message} "
-            f"(Status code: {response.status_code})"
+            f"Status code: {response.status_code}"
         )
 
         if response.text:
@@ -75,16 +90,15 @@ def show_backend_error(response, default_message):
             ):
 
                 st.code(
-                    response.text[:1500],
-                    language=None
+                    response.text[:1500]
                 )
 
 
 # =====================================
-# NETFLIX-INSPIRED CSS
+# PAGE CSS
 # =====================================
 
-st.markdown(
+render_html(
     """
     <style>
 
@@ -101,14 +115,14 @@ st.markdown(
                 #0d0d0d
             );
 
-        color: #ffffff;
+        color: white;
     }
 
 
     .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 3rem;
         max-width: 1250px;
+        padding-top: 1.5rem;
+        padding-bottom: 4rem;
     }
 
 
@@ -132,7 +146,6 @@ st.markdown(
         font-size: 3rem;
         font-weight: 900;
         letter-spacing: -2px;
-        margin-bottom: 0;
 
         text-shadow:
             0 0 15px
@@ -141,41 +154,44 @@ st.markdown(
 
 
     .subtitle {
-        color: #b3b3b3;
-        font-size: 1.05rem;
-        margin-top: -10px;
+        color: #a8a8a8;
+        font-size: 1rem;
         margin-bottom: 2rem;
     }
 
 
     .hero {
-        padding: 3.5rem;
+        padding: 4rem;
+        margin-bottom: 2.5rem;
+
         border-radius: 20px;
 
         background:
             linear-gradient(
                 90deg,
                 rgba(0, 0, 0, 0.98),
-                rgba(0, 0, 0, 0.72)
+                rgba(20, 5, 5, 0.85)
             );
 
         border:
             1px solid
-            rgba(229, 9, 20, 0.25);
+            rgba(229, 9, 20, 0.35);
 
         box-shadow:
             0 15px 60px
             rgba(0, 0, 0, 0.8);
-
-        margin-bottom: 2rem;
     }
 
 
     .hero-title {
-        font-size: 3.4rem;
+        color: white;
+
+        font-size: 3.8rem;
         font-weight: 900;
+
         line-height: 1.05;
-        margin-bottom: 1rem;
+
+        margin-bottom: 1.2rem;
     }
 
 
@@ -185,87 +201,113 @@ st.markdown(
 
 
     .hero-description {
-        color: #c7c7c7;
-        font-size: 1.1rem;
-        max-width: 700px;
-        line-height: 1.7;
+        max-width: 720px;
+
+        color: #c5c5c5;
+
+        font-size: 1.15rem;
+
+        line-height: 1.8;
     }
 
 
     .section-title {
-        font-size: 1.45rem;
-        font-weight: 750;
-        margin-top: 1.5rem;
-        margin-bottom: 0.7rem;
+        color: white;
+
+        font-size: 1.5rem;
+
+        font-weight: 800;
+
+        margin-top: 2rem;
+
+        margin-bottom: 1rem;
     }
 
 
     .feature-card {
+        min-height: 165px;
+
+        padding: 1.5rem;
+
+        border-radius: 16px;
+
         background:
             linear-gradient(
                 145deg,
-                #151515,
+                #181818,
                 #0c0c0c
             );
 
         border:
             1px solid
-            #252525;
+            #303030;
 
-        border-radius: 15px;
-        padding: 1.3rem;
-        min-height: 130px;
-
-        transition: 0.3s;
+        transition:
+            transform 0.25s,
+            border-color 0.25s;
     }
 
 
     .feature-card:hover {
-        border-color: #e50914;
-
         transform:
-            translateY(-4px);
+            translateY(-5px);
+
+        border-color:
+            #e50914;
 
         box-shadow:
             0 10px 30px
-            rgba(229, 9, 20, 0.16);
+            rgba(229, 9, 20, 0.18);
     }
 
 
     .card-icon {
-        font-size: 1.8rem;
+        font-size: 2rem;
     }
 
 
     .card-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        margin-top: 0.5rem;
+        color: white;
+
+        font-size: 1.1rem;
+
+        font-weight: 800;
+
+        margin-top: 0.7rem;
     }
 
 
     .card-text {
-        color: #999999;
-        font-size: 0.88rem;
+        color: #9c9c9c;
+
+        font-size: 0.9rem;
+
+        margin-top: 0.4rem;
+
+        line-height: 1.5;
     }
 
 
     .stTextInput input {
-        background-color: #141414 !important;
         color: white !important;
+
+        background:
+            #151515 !important;
 
         border:
             1px solid
-            #333333 !important;
+            #383838 !important;
 
-        border-radius: 8px !important;
-        padding: 0.8rem !important;
+        border-radius:
+            9px !important;
+
+        padding:
+            0.9rem !important;
     }
 
 
     .stTextInput input:focus {
-        border:
-            1px solid
+        border-color:
             #e50914 !important;
 
         box-shadow:
@@ -277,19 +319,24 @@ st.markdown(
     .stButton button {
         width: 100%;
 
+        color: white !important;
+
+        font-weight: 800 !important;
+
+        border: none !important;
+
+        border-radius:
+            9px !important;
+
+        padding:
+            0.75rem !important;
+
         background:
             linear-gradient(
                 135deg,
                 #e50914,
-                #b20710
+                #a9070f
             ) !important;
-
-        color: white !important;
-        border: none !important;
-        border-radius: 7px !important;
-
-        font-weight: 700 !important;
-        padding: 0.7rem !important;
     }
 
 
@@ -297,70 +344,73 @@ st.markdown(
         background:
             linear-gradient(
                 135deg,
-                #ff1f2a,
+                #ff202b,
                 #e50914
             ) !important;
 
-        transform:
-            scale(1.01);
-
         box-shadow:
-            0 5px 22px
+            0 6px 25px
             rgba(229, 9, 20, 0.4);
     }
 
 
     [data-testid="stChatMessage"] {
-        background-color:
-            rgba(20, 20, 20, 0.85);
+        background:
+            rgba(20, 20, 20, 0.9);
 
         border:
             1px solid
-            #292929;
+            #303030;
 
-        border-radius: 14px;
-        padding: 1rem;
-        margin-bottom: 0.8rem;
+        border-radius:
+            14px;
+
+        padding:
+            1rem;
     }
 
 
     [data-testid="stChatInput"] {
+        background:
+            #111111;
+
         border:
             1px solid
-            #333333;
+            #393939;
 
-        border-radius: 12px;
-        background: #111111;
+        border-radius:
+            12px;
     }
 
 
     [data-testid="stMetric"] {
-        background: #121212;
+        background:
+            #141414;
 
         border:
             1px solid
-            #292929;
+            #303030;
 
-        padding: 1rem;
-        border-radius: 12px;
-    }
+        border-radius:
+            12px;
 
-
-    hr {
-        border-color: #252525;
+        padding:
+            1rem;
     }
 
 
     .footer {
         color: #666666;
+
         text-align: center;
-        padding-top: 3rem;
+
+        padding-top: 4rem;
+
         font-size: 0.85rem;
     }
 
     </style>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -387,7 +437,7 @@ if "repo_name" not in st.session_state:
 # HEADER
 # =====================================
 
-st.markdown(
+render_html(
     """
     <div class="logo">
         CODEFLIX
@@ -396,8 +446,7 @@ st.markdown(
     <div class="subtitle">
         AI-powered GitHub repository intelligence
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -405,7 +454,7 @@ st.markdown(
 # HERO
 # =====================================
 
-st.markdown(
+render_html(
     """
     <div class="hero">
 
@@ -426,13 +475,12 @@ st.markdown(
         </div>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
 # =====================================
-# FEATURES
+# FEATURE CARDS
 # =====================================
 
 col1, col2, col3 = st.columns(3)
@@ -440,7 +488,7 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
 
-    st.markdown(
+    render_html(
         """
         <div class="feature-card">
 
@@ -458,14 +506,13 @@ with col1:
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 
 with col2:
 
-    st.markdown(
+    render_html(
         """
         <div class="feature-card">
 
@@ -478,19 +525,18 @@ with col2:
             </div>
 
             <div class="card-text">
-                Ask questions about
-                your complete codebase.
+                Ask questions about your
+                complete codebase.
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 
 with col3:
 
-    st.markdown(
+    render_html(
         """
         <div class="feature-card">
 
@@ -503,13 +549,12 @@ with col3:
             </div>
 
             <div class="card-text">
-                See which repository
-                files support the answer.
+                See the repository files
+                supporting each answer.
             </div>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 
@@ -517,13 +562,12 @@ with col3:
 # INDEX REPOSITORY
 # =====================================
 
-st.markdown(
+render_html(
     """
     <div class="section-title">
         📂 Add a Repository
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -542,7 +586,7 @@ if st.button(
     use_container_width=True
 ):
 
-    if not repo_url:
+    if not repo_url.strip():
 
         st.warning(
             "Enter a GitHub repository URL."
@@ -559,7 +603,7 @@ if st.button(
                 response = requests.post(
                     f"{API_URL}/index/",
                     json={
-                        "repo_url": repo_url
+                        "repo_url": repo_url.strip()
                     },
                     timeout=300
                 )
@@ -567,15 +611,16 @@ if st.button(
 
                 if response.ok:
 
-                    data = get_response_data(
+                    data = get_json_response(
                         response
                     )
+
 
                     if data is None:
 
                         st.error(
                             "The backend returned "
-                            "invalid JSON."
+                            "an invalid response."
                         )
 
                     else:
@@ -593,14 +638,17 @@ if st.button(
                             "Repository indexed successfully!"
                         )
 
+
                         metric1, metric2, metric3 = (
                             st.columns(3)
                         )
+
 
                         metric1.metric(
                             "Repository",
                             st.session_state.repo_name
                         )
+
 
                         metric2.metric(
                             "Documents",
@@ -610,6 +658,7 @@ if st.button(
                             )
                         )
 
+
                         metric3.metric(
                             "AI Chunks",
                             data.get(
@@ -617,6 +666,7 @@ if st.button(
                                 0
                             )
                         )
+
 
                 else:
 
@@ -629,7 +679,7 @@ if st.button(
             except requests.exceptions.Timeout:
 
                 st.error(
-                    "Indexing took too long. "
+                    "The backend took too long. "
                     "Render may be waking up. "
                     "Please try again."
                 )
@@ -659,7 +709,7 @@ st.divider()
 
 if st.session_state.repository_indexed:
 
-    st.markdown(
+    render_html(
         f"""
         <div class="section-title">
 
@@ -670,19 +720,17 @@ if st.session_state.repository_indexed:
             </span>
 
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 else:
 
-    st.markdown(
+    render_html(
         """
         <div class="section-title">
             💬 Ask CODEFLIX
         </div>
-        """,
-        unsafe_allow_html=True
+        """
     )
 
 
@@ -696,7 +744,7 @@ for message in st.session_state.messages:
         message["role"]
     ):
 
-        st.write(
+        st.markdown(
             message["content"]
         )
 
@@ -753,9 +801,10 @@ if question:
 
                     if response.ok:
 
-                        data = get_response_data(
+                        data = get_json_response(
                             response
                         )
+
 
                         if data is None:
 
@@ -771,10 +820,15 @@ if question:
                                 "No answer was returned."
                             )
 
-                            st.write(answer)
+
+                            st.markdown(
+                                answer
+                            )
 
 
-                            if data.get("sources"):
+                            if data.get(
+                                "sources"
+                            ):
 
                                 with st.expander(
                                     "📄 View Sources"
@@ -785,8 +839,7 @@ if question:
                                     ]:
 
                                         st.code(
-                                            source,
-                                            language=None
+                                            source
                                         )
 
 
@@ -796,6 +849,7 @@ if question:
                                     "content": answer
                                 }
                             )
+
 
                     else:
 
@@ -832,7 +886,7 @@ if question:
 # FOOTER
 # =====================================
 
-st.markdown(
+render_html(
     """
     <div class="footer">
 
@@ -840,6 +894,5 @@ st.markdown(
         GitHub Repository Intelligence
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
