@@ -1,23 +1,22 @@
-fastapi
-uvicorn[standard]
+fastapi==0.116.1
+uvicorn==0.35.0
 
-langchain
-langchain-core
-langchain-community
-langchain-text-splitters
-langchain-chroma
-langchain-huggingface
+langchain-core==0.3.76
+langchain-community==0.3.27
+langchain-text-splitters==0.3.9
+langchain-chroma==0.2.5
+langchain-huggingface==0.3.1
 
-langgraph
+langgraph==0.6.6
 
-chromadb
+chromadb==1.0.20
 
-huggingface-hub
+huggingface-hub==0.34.4
 
-GitPython
+GitPython==3.1.45
 
-python-dotenv
+python-dotenv==1.1.1
 
-pydantic
+pydantic==2.11.7
 
-requests
+requests==2.32.4
